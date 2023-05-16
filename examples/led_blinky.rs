@@ -6,7 +6,7 @@
 #![no_std]
 #![no_main]
 
-use b_l475e_iot01a::{entry, log_init};
+use b_l475e_iot01a::{entry, led::Led, log_init};
 
 #[entry]
 fn main() -> ! {
@@ -16,6 +16,6 @@ fn main() -> ! {
     loop {
         // TODO: Replace by proper delay
         for _ in 0..500_000 {}
-        user_led.toggle();
+        user_led.set_on();
     }
 }
