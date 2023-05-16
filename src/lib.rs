@@ -1,15 +1,18 @@
 #![no_std]
 
+pub mod led;
 pub mod panic;
 
 use core::sync::atomic::{AtomicBool, Ordering};
 pub use cortex_m_rt::entry;
 use hal::{
     flash::FlashExt,
-    gpio::{GpioExt, Output, Pin, PinState, PushPull, H8},
+    gpio::{GpioExt, PinState},
     pac,
     prelude::*,
 };
+use led::UserLed;
+
 #[allow(unused_imports)]
 pub use rtt_target::{rprintln as log, rtt_init_print as log_init};
 use stm32l4xx_hal as hal;
@@ -18,7 +21,7 @@ pub type CorePeripherals = cortex_m::Peripherals;
 
 pub struct Board {
     pub cp: CorePeripherals,
-    pub user_led: Pin<Output<PushPull>, H8, 'B', 14>,
+    pub user_led: UserLed,
 }
 
 impl Board {
