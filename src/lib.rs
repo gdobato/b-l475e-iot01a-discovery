@@ -5,23 +5,26 @@ pub mod panic;
 
 use core::sync::atomic::{AtomicBool, Ordering};
 pub use cortex_m_rt::entry;
-use hal::{
+pub use embedded_hal::blocking::delay::{DelayMs, DelayUs};
+pub use hal::delay::Delay as SysTimer;
+use stm32l4xx_hal::{
+    self as hal,
     flash::FlashExt,
     gpio::{GpioExt, PinState},
     pac,
     prelude::*,
+    rcc::Clocks,
 };
-use led::UserLed;
 
 #[allow(unused_imports)]
 pub use rtt_target::{rprintln as log, rtt_init_print as log_init};
-use stm32l4xx_hal as hal;
 
 pub type CorePeripherals = cortex_m::Peripherals;
 
 pub struct Board {
     pub cp: CorePeripherals,
-    pub user_led: UserLed,
+    pub clocks: Clocks,
+    pub user_led: led::UserLed,
 }
 
 impl Board {
@@ -42,7 +45,7 @@ impl Board {
         let mut acr = dp.FLASH.constrain().acr;
         let mut rcc = dp.RCC.constrain();
         let mut pwr = dp.PWR.constrain(&mut rcc.apb1r1);
-        let _ = rcc.cfgr.sysclk(80.MHz()).freeze(&mut acr, &mut pwr);
+        let clocks = rcc.cfgr.sysclk(80.MHz()).freeze(&mut acr, &mut pwr);
 
         // User LED
         let mut gpiob = dp.GPIOB.split(&mut rcc.ahb2);
@@ -52,6 +55,10 @@ impl Board {
             PinState::Low,
         );
 
-        Board { cp, user_led }
+        Board {
+            cp,
+            clocks,
+            user_led,
+        }
     }
 }

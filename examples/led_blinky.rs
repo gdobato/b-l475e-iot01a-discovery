@@ -6,16 +6,23 @@
 #![no_std]
 #![no_main]
 
-use b_l475e_iot01a::{entry, led::Led, log_init};
+use b_l475e_iot01a::{entry, led::Led, log, log_init, DelayMs, SysTimer};
 
 #[entry]
 fn main() -> ! {
     log_init!();
-    let b_l475e_iot01a::Board { mut user_led, .. } = b_l475e_iot01a::Board::take();
+    let b_l475e_iot01a::Board {
+        cp,
+        clocks,
+        mut user_led,
+        ..
+    } = b_l475e_iot01a::Board::take();
+
+    let mut sys_timer = SysTimer::new(cp.SYST, clocks);
 
     loop {
-        // TODO: Replace by proper delay
-        for _ in 0..500_000 {}
-        user_led.set_on();
+        sys_timer.delay_ms(500u16);
+        user_led.toggle();
+        log!("User_led {:?}", Led::get_state(&user_led));
     }
 }
