@@ -2,8 +2,8 @@
 
 use crate::hal::gpio::{Output, Pin, PinState, PushPull, H8};
 
-type DigitalOutputPin<HL, const P: char, const N: u8> = Pin<Output<PushPull>, HL, P, N>;
-pub type UserLed = DigitalOutputPin<H8, 'B', 14>;
+pub type LedPin<HL, const P: char, const N: u8> = Pin<Output<PushPull>, HL, P, N>;
+pub type UserLed = LedPin<H8, 'B', 14>;
 
 #[derive(Debug)]
 pub enum State {
@@ -18,7 +18,7 @@ pub trait Led {
     fn get_state(&self) -> State;
 }
 
-impl Led for UserLed {
+impl<HL, const P: char, const N: u8> Led for LedPin<HL, P, N> {
     #[inline(always)]
     fn set_on(&mut self) {
         self.set_high();

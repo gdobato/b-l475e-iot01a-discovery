@@ -22,7 +22,7 @@ pub use rtt_target::{rprintln as log, rtt_init_print as log_init};
 pub type CorePeripherals = cortex_m::Peripherals;
 
 pub struct Board {
-    pub cp: CorePeripherals,
+    pub core_peripherals: CorePeripherals,
     pub clocks: Clocks,
     pub user_led: led::UserLed,
 }
@@ -38,17 +38,17 @@ impl Board {
         #[cfg(debug_assertions)]
         log!("Board init");
 
-        let cp = cortex_m::Peripherals::take().unwrap();
-        let dp = pac::Peripherals::take().unwrap();
+        let core_peripherals = cortex_m::Peripherals::take().unwrap();
+        let device_peripherals = pac::Peripherals::take().unwrap();
 
         // Clock tree
-        let mut acr = dp.FLASH.constrain().acr;
-        let mut rcc = dp.RCC.constrain();
-        let mut pwr = dp.PWR.constrain(&mut rcc.apb1r1);
+        let mut acr = device_peripherals.FLASH.constrain().acr;
+        let mut rcc = device_peripherals.RCC.constrain();
+        let mut pwr = device_peripherals.PWR.constrain(&mut rcc.apb1r1);
         let clocks = rcc.cfgr.sysclk(80.MHz()).freeze(&mut acr, &mut pwr);
 
         // User LED
-        let mut gpiob = dp.GPIOB.split(&mut rcc.ahb2);
+        let mut gpiob = device_peripherals.GPIOB.split(&mut rcc.ahb2);
         let user_led = gpiob.pb14.into_push_pull_output_in_state(
             &mut gpiob.moder,
             &mut gpiob.otyper,
@@ -56,7 +56,7 @@ impl Board {
         );
 
         Board {
-            cp,
+            core_peripherals,
             clocks,
             user_led,
         }

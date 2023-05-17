@@ -12,13 +12,13 @@ use b_l475e_iot01a::{entry, led::Led, log, log_init, DelayMs, SysTimer};
 fn main() -> ! {
     log_init!();
     let b_l475e_iot01a::Board {
-        cp,
+        core_peripherals,
         clocks,
         mut user_led,
         ..
     } = b_l475e_iot01a::Board::take();
 
-    let mut sys_timer = SysTimer::new(cp.SYST, clocks);
+    let mut sys_timer = SysTimer::new(core_peripherals.SYST, clocks);
 
     loop {
         sys_timer.delay_ms(500u16);
