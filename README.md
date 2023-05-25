@@ -16,16 +16,16 @@ To build an example, run the following command:
 ```
 cargo build --example <example_name> [--release]
 ```
-For instance, to build `led_blinky`:
+For instance, to build `blinky`:
 ```
-cargo build --example led_blinky
+cargo build --example blinky
 ```
 
 ## Flash with debug probe (JLink, ST-Link)
 ```
 cargo embed --example <example_name> [--release]
 ```
-For example, to flash `led_blinky`, run the following command:
+For example, to flash `blinky`, run the following command:
 ```
-cargo embed --example led_blinky
+cargo embed --example blinky
 ```

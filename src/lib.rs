@@ -5,16 +5,14 @@ pub mod panic;
 
 use core::sync::atomic::{AtomicBool, Ordering};
 pub use cortex_m_rt::entry;
-pub use embedded_hal::blocking::delay::{DelayMs, DelayUs};
-pub use hal::delay::Delay as SysTimer;
-use stm32l4xx_hal::{
-    self as hal,
+use hal::{
     flash::FlashExt,
     gpio::{GpioExt, PinState},
     pac,
     prelude::*,
-    rcc::Clocks,
 };
+pub use stm32l4xx_hal as hal;
+use systick_monotonic::fugit::HertzU32;
 
 #[allow(unused_imports)]
 pub use rtt_target::{rprintln as log, rtt_init_print as log_init};
@@ -22,10 +20,10 @@ pub use rtt_target::{rprintln as log, rtt_init_print as log_init};
 pub type CorePeripherals = cortex_m::Peripherals;
 
 pub struct Board {
-    pub core_peripherals: CorePeripherals,
-    pub clocks: Clocks,
     pub user_led: led::UserLed,
 }
+
+pub const CORE_FREQUENCY: HertzU32 = HertzU32::from_raw(80_000_000);
 
 impl Board {
     pub fn take() -> Self {
@@ -38,27 +36,21 @@ impl Board {
         #[cfg(debug_assertions)]
         log!("Board init");
 
-        let core_peripherals = cortex_m::Peripherals::take().unwrap();
-        let device_peripherals = pac::Peripherals::take().unwrap();
+        let dp = pac::Peripherals::take().unwrap();
 
-        // Clock tree
-        let mut acr = device_peripherals.FLASH.constrain().acr;
-        let mut rcc = device_peripherals.RCC.constrain();
-        let mut pwr = device_peripherals.PWR.constrain(&mut rcc.apb1r1);
-        let clocks = rcc.cfgr.sysclk(80.MHz()).freeze(&mut acr, &mut pwr);
+        let mut acr = dp.FLASH.constrain().acr;
+        let mut rcc = dp.RCC.constrain();
+        let mut pwr = dp.PWR.constrain(&mut rcc.apb1r1);
+        let _ = rcc.cfgr.sysclk(CORE_FREQUENCY).freeze(&mut acr, &mut pwr);
 
         // User LED
-        let mut gpiob = device_peripherals.GPIOB.split(&mut rcc.ahb2);
+        let mut gpiob = dp.GPIOB.split(&mut rcc.ahb2);
         let user_led = gpiob.pb14.into_push_pull_output_in_state(
             &mut gpiob.moder,
             &mut gpiob.otyper,
             PinState::Low,
         );
 
-        Board {
-            core_peripherals,
-            clocks,
-            user_led,
-        }
+        Board { user_led }
     }
 }
